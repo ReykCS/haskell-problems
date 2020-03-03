@@ -204,6 +204,7 @@ problem33 a b
 problem34 :: Int -> Int
 problem34 num = length [a | a <- [1..(num-1)], problem33 num a]
 
+--- determine Prime factors
 problem35 :: Int -> [Int]
 problem35 num = problem35'' [x | x <- [2..(num-1)], let lst = [m | m <- [2..(x-1)], (mod x m) == 0], length lst == 0] num
 
@@ -218,7 +219,51 @@ problem35' num prime mult
                         | otherwise = []
 
 problem36 :: Int -> [(Int, Int)]
-problem36 num = []
+problem36 num = problem36' (problem35 num)
 
-problem36'' :: [Int] -> [(Int, Int)]
-problem
+problem36' :: [Int] -> [(Int, Int)]
+problem36' [] = []
+problem36' (x:xs) = let amount = problem36'' xs x 1 in [(x, amount)] ++ (problem36' (drop (amount-1) xs))
+
+problem36'' :: [Int] -> Int -> Int -> Int
+problem36'' [] num res = res
+problem36'' (x:xs) num res
+                    | (==) x num = problem36'' xs num (res+1)
+                    | otherwise = problem36'' xs num res
+
+-- eulers totient
+problem37 :: Int -> Int
+problem37 num = foldr (\x y -> (*) (calc x) y) 1 (problem36 num)
+            where 
+                calc x = pow (((fst x) - 1) * (fst x)) ((snd x) - 1)
+
+pow :: Int -> Int -> Int
+pow num 0 = 1
+pow num 1 = num
+pow num n = num * (pow num (n-1))
+
+-- Prime numbers in range
+problem39 :: Int -> Int -> [Int]
+problem39 a b = [c | c <- [a..b], let list = [d | d <- [2..(c - 1)] , mod c d == 0], length list == 0]
+
+-- goldbach problem
+problem40 :: Int -> (Int, Int)
+problem40 num = head (filter (\x -> checkPrime x) (map (\x -> (x, num - x)) [2..(num - 1)]))
+                where
+                    checkPrime x = (&&) (isPrime (fst x)) (isPrime (snd x))
+
+isPrime :: Int -> Bool
+isPrime 1 = True
+isPrime 2 = True
+isPrime num = length [a | a <- [2..(num-1)], mod num a == 0] == 0
+
+-- goldbach list
+problem41 :: Int -> Int -> [(Int, Int)]
+problem41 a b = map (problem40) [c | c <- [a..b], mod c 2 == 0]
+
+problem41_2 :: Int -> Int -> [(Int, Int)]
+problem41_2 a b = filter (\x -> (>=) (fst x) 50) (problem41 a b)
+
+problem41_3 :: Int -> Int -> Int 
+problem41_3 a b = length (problem41_2 a b)
+
